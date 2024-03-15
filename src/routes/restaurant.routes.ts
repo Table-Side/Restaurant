@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, Request } from "express";
 import prisma from "../config/prisma";
 
 const router = Router();
@@ -38,12 +38,13 @@ router.get("/own", async (req, res) => {
 router.post('/create', async (req, res) => {
     // Create a new restaurant
     try {
-        const { userId, role } = req.user as { userId: string, role: string };
-        const { name, description, address, contact } = req.body;
+        const { userId } = req.user as { userId: string };
+        const { name, description } = req.body;
 
         const restaurant = await prisma.restaurant.create({
             data: {
                 name,
+                description,
                 restaurantOwners: {
                     create: {
                         userId
@@ -100,7 +101,6 @@ router.get('/:restaurantId/menu', async (req, res) => {
 router.post('/:restaurantId/menu/add', async (req, res) => {
     // Add item to restaurant's menu
     try {
-        const { restaurantId } = req.params;
         const { displayName, shortName, description, quantity, price, menuId } = req.body;
 
         const item = await prisma.item.create({
