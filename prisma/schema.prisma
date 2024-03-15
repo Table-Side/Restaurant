@@ -13,6 +13,7 @@ model Restaurant {
   updatedAt DateTime @updatedAt
 
   name            String
+  description     String
 
   menus            Menu[]
   restaurantOwners RestaurantOwner[]
