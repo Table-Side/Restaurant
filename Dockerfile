@@ -8,8 +8,8 @@ RUN yarn install --frozen-lockfile
 
 COPY prisma ./prisma
 COPY src ./src
-COPY tsconfig.json ./
-COPY .env ./
+COPY tsconfig.json ./tsconfig.json
+COPY .env ./.env
 
 RUN yarn build
 
