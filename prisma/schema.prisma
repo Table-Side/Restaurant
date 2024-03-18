@@ -12,10 +12,11 @@ model Restaurant {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name            String
-  description     String
+  name        String
+  description String
 
   menus            Menu[]
+  tables           RestaurantTable[]
   restaurantOwners RestaurantOwner[]
 }
 
@@ -34,7 +35,7 @@ model RestaurantTable {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  number    Integer
+  number Int
 
   Restaurant   Restaurant? @relation(fields: [restaurantId], references: [id])
   restaurantId String?
