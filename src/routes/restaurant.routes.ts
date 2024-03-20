@@ -59,7 +59,7 @@ router.post('/create', async (req, res) => {
     }
 });
 
-router.get('/:restaurantId', async (req, res) => {
+router.get('/:restaurantId/details', async (req, res) => {
     // Get restaurant by ID
     try {
         const { restaurantId } = req.params;
@@ -78,8 +78,9 @@ router.get('/:restaurantId', async (req, res) => {
     }
 });
 
-router.put('/:restaurantId', async (req, res) => {
+router.put('/:restaurantId/details', async (req, res) => {
     // TODO: Update restaurant
+    
 });
 
 router.get('/:restaurantId/menu', async (req, res) => {
