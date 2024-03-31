@@ -37,11 +37,17 @@ class App {
 
     routes() {
         // Order routes
-        this.server.use("/", routers.restaurant);
+        this.server.use("/restaurants", routers.restaurant);
 
         // 404
         this.server.use((req, res, next) => {
-            return res.status(404).send("Not found or invalid params");
+            return res.status(404).send({
+                error: {
+                    code: 404,
+                    message: "Route Not Found",
+                    uri: req.originalUrl,
+                }
+            });
         });
     }
 }
