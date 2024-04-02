@@ -17,7 +17,7 @@ router.get("/all", async (req, res) => {
 router.get("/own", async (req, res) => {
     // Get user's own restaurants
     try {
-        const { userId } = req.user as { userId: string };
+        const userId = (req.user as { sub: string }).sub;
 
         const restaurants = await prisma.restaurant.findMany({
             where: {
@@ -29,16 +29,23 @@ router.get("/own", async (req, res) => {
             }
         });
 
-        res.status(200).json(restaurants);
+        res.status(200).json({
+            data: restaurants
+        });
     } catch (error) {
-        res.status(500).json({ error: "Failed to get restaurants" });
+        res.status(500).json({
+            error: {
+                message: "Failed to get restaurants",
+                details: error
+            }
+        });
     }
 });
 
 router.post('/create', async (req, res) => {
     // Create a new restaurant
     try {
-        const { userId } = req.user as { userId: string };
+        const userId = (req.user as { sub: string }).sub;
         const { name, description } = req.body;
 
         const restaurant = await prisma.restaurant.create({
@@ -53,9 +60,16 @@ router.post('/create', async (req, res) => {
             }
         });
 
-        res.status(201).json(restaurant);
+        res.status(200).json({
+            data: restaurant
+        });
     } catch (error) {
-        res.status(500).json({ error: "Failed to create restaurant" });
+        res.status(500).json({
+            error: {
+                message: "Failed to create restaurant",
+                details: error
+            }
+        });
     }
 });
 
@@ -69,12 +83,23 @@ router.get('/:restaurantId/details', async (req, res) => {
             }
         });
         if (restaurant) {
-            res.status(200).json(restaurant);
+            res.status(200).json({
+                data: restaurant
+            });
         } else {
-            res.status(404).json({ error: "Restaurant not found" });
+            res.status(404).json({
+                error: {
+                    message: "Restaurant not found"
+                }
+            });
         }
     } catch (error) {
-        res.status(500).json({ error: "Failed to get restaurant" });
+        res.status(500).json({
+            error: { 
+                message: "Failed to get restaurant",
+                details: error
+            }
+        });
     }
 });
 
@@ -93,9 +118,16 @@ router.get('/:restaurantId/menu', async (req, res) => {
             }
         });
 
-        res.status(200).json(menu);
+        res.status(200).json({
+            data: menu
+        });
     } catch (error) {
-        res.status(500).json({ error: "Failed to get menu" });
+        res.status(500).json({
+            error: {
+                message: `Failed to get menu`,
+                details: error
+            }
+        });
     }
 });
 
@@ -115,9 +147,22 @@ router.post('/:restaurantId/menu/add', async (req, res) => {
             }
         });
 
-        res.status(201).json(item);
+        const menu = await prisma.menu.findUnique({
+            where: {
+                id: menuId
+            }
+        });
+
+        res.status(200).json({
+            data: menu
+        });
     } catch (error) {
-        res.status(500).json({ error: "Failed to add item to menu" });
+        res.status(500).json({
+            error: {
+                message: "Failed to add item to menu",
+                details: error
+            }
+        });
     }
 });
 
@@ -139,9 +184,16 @@ router.put('/:restaurantId/menu/:itemId/update-availability/:availabilityState',
             }
         });
 
-        res.status(200).json(item);
+        res.status(200).json({
+            data: item
+        });
     } catch (error) {
-        res.status(500).json({ error: "Failed to update item availability" });
+        res.status(500).json({
+            error: {
+                message: "Failed to update item availability",
+                details: error
+            }
+        });
     }
 });
 
@@ -158,7 +210,12 @@ router.delete('/:restaurantId/menu/:itemId', async (req, res) => {
 
         res.status(204).send();
     } catch (error) {
-        res.status(500).json({ error: "Failed to delete item" });
+        res.status(500).json({
+            error: {
+                message: "Failed to delete item",
+                details: error
+            }
+        });
     }
 });
 
