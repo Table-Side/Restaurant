@@ -1,5 +1,6 @@
 import { Router, Request } from "express";
 import prisma from "../config/prisma";
+import { AuthenticatedRequest } from "../interfaces";
 
 const router = Router();
 
@@ -14,10 +15,10 @@ router.get("/all", async (req, res) => {
     }
 });
 
-router.get("/own", async (req, res) => {
+router.get("/own", async (req: AuthenticatedRequest, res) => {
     // Get user's own restaurants
     try {
-        const userId = (req.user as { sub: string }).sub;
+        const userId = req.user.sub;
 
         const restaurants = await prisma.restaurant.findMany({
             where: {
@@ -42,10 +43,10 @@ router.get("/own", async (req, res) => {
     }
 });
 
-router.post('/create', async (req, res) => {
+router.post('/create', async (req: AuthenticatedRequest, res) => {
     // Create a new restaurant
     try {
-        const userId = (req.user as { sub: string }).sub;
+        const userId = req.user.sub;
         const { name, description } = req.body;
 
         const restaurant = await prisma.restaurant.create({
@@ -103,7 +104,7 @@ router.get('/:restaurantId/details', async (req, res) => {
     }
 });
 
-router.put('/:restaurantId/details', async (req, res) => {
+router.put('/:restaurantId/details', async (req: AuthenticatedRequest, res) => {
     // TODO: Update restaurant
     
 });
@@ -131,7 +132,7 @@ router.get('/:restaurantId/menu', async (req, res) => {
     }
 });
 
-router.post('/:restaurantId/menu/add', async (req, res) => {
+router.post('/:restaurantId/menu/add', async (req: AuthenticatedRequest, res) => {
     // Add item to restaurant's menu
     try {
         const { displayName, shortName, description, quantity, price, menuId } = req.body;
@@ -166,11 +167,11 @@ router.post('/:restaurantId/menu/add', async (req, res) => {
     }
 });
 
-router.put('/:restaurantId/menu/:itemId', async (req, res) => {
+router.put('/:restaurantId/menu/:itemId', async (req: AuthenticatedRequest, res) => {
     // TODO: Update menu item
 });
 
-router.put('/:restaurantId/menu/:itemId/update-availability/:availabilityState', async (req, res) => {
+router.put('/:restaurantId/menu/:itemId/update-availability/:availabilityState', async (req: AuthenticatedRequest, res) => {
     // Update menu item availability
     try {
         const { itemId, availabilityState } = req.params;
@@ -197,7 +198,7 @@ router.put('/:restaurantId/menu/:itemId/update-availability/:availabilityState',
     }
 });
 
-router.delete('/:restaurantId/menu/:itemId', async (req, res) => {
+router.delete('/:restaurantId/menu/:itemId', async (req: AuthenticatedRequest, res) => {
     // Delete menu item
     try {
         const { itemId } = req.params;
