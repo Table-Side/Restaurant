@@ -52,7 +52,7 @@ None
 ```json
 {
     "name": "Wates House",
-    "description": "Wates House student bar and restaurant offers a great menu, a coffee and milkshake counter and a full bar with a fabulous range of cocktails including a great non-alcoholic selection, draught beer, cider and a range of bottled beers."
+    "description": "Wates House student bar and restaurant offers a great menu, a coffee and milkshake counter and a full bar with a fabulous range of cocktails including a great non-alcoholic selection, draught beer, cider and a range of bottled beers.",
     "numberOfTables": 50
 }
 ```
