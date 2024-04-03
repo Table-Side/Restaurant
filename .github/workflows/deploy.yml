@@ -52,14 +52,13 @@ jobs:
     needs: release-image
     steps:
       - name: Trigger API deployment workflow
-        uses: actions/github-script@v4
+        uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
-            octokit.actions.createWorkflowDispatch({
+            await github.rest.actions.createWorkflowDispatch({
               owner: 'Table-Side',
               repo: 'API',
-              workflow_id: 'deploy.yml'
+              workflow_id: 'deploy.yml',
+              ref: 'main'
             });
-    
