@@ -8,16 +8,23 @@ const decodeJWT = (req: AuthenticatedRequest, res: Response, next: NextFunction)
     if (token) {
         try {
             const decoded = jwt.decode(token, { json: true });
-            
-            if (typeof decoded !== 'string') {
-                (req as AuthenticatedRequest).user = {
-                    sub: decoded.sub,
-                    name: decoded.name,
-                    email: decoded.email,
-                    verified: decoded.verified,
-                    realm_access: {
-                        roles: decoded.realm_access.roles
+
+            if (!decoded) {
+                return res.status(401).json({
+                    error: {
+                        message: 'Invalid JWT token provided',
+                        details: 'Token could not be decoded'
                     }
+                });
+            }
+
+            req.user = {
+                sub: (decoded.sub as string),
+                name: (decoded.name as string),
+                email: (decoded.email as string),
+                verified: (decoded.verified as boolean),
+                realm_access: {
+                    roles: decoded.realm_access.roles
                 }
             }
         } catch (error) {
