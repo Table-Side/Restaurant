@@ -145,7 +145,9 @@ None
 #### Request Body
 ```json
 {
-    "name": "Lunch"
+    "name": "Lunch",
+    "validFrom": "12:00:00",
+    "validUntil": "21:00:00"
 }
 ```
 
@@ -158,7 +160,7 @@ None
 }
 ```
 
-### GET `/restaurants/:restaurantId/menu/:menuId`: Get a specific menu for a restaurant
+### GET `/restaurants/:restaurantId/menu/:menuId/details`: Get a specific menu for a restaurant
 
 - Authentication?: No
 
@@ -211,7 +213,7 @@ None
 }
 ```
 
-### PUT `/restaurants/:restaurantId/menu/:menuId/:itemId`: Update an item on the menu
+### PUT `/restaurants/:restaurantId/menu/:menuId/:itemId/update`: Update an item on the menu
 
 - Authentication?: Yes
   - Role: `restaurant`
@@ -244,7 +246,7 @@ None
 }
 ```
 
-### PUT `/restaurants/:restaurantId/menu/:menuId/:itemId/update-availability/:availabilityState`: Update whether an item is available for ordering
+### PUT `/restaurants/:restaurantId/menu/:menuId/:itemId/update/availability/:availabilityState`: Update whether an item is available for ordering
 
 - Authentication?: Yes
   - Role: `restaurant`
@@ -268,7 +270,7 @@ None
 }
 ```
 
-### DELETE `/:restaurantId/menu/:menuId/:itemId`: Remove an item from a menu
+### DELETE `/:restaurantId/menu/:menuId/:itemId/remove`: Remove an item from a menu
 
 - Authentication?: Yes
   - Role: `restaurant`
