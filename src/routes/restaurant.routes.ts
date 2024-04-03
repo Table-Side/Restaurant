@@ -99,6 +99,21 @@ router.post('/create', async (req: AuthenticatedRequest, res: Response) => {
             });
         }
 
+        // TODO: Update user role to restaurant owner (fix URL)
+        // await fetch(`${process.env.KEYCLOAK_URL}/admin/realms/${process.env.KEYCLOAK_REALM}/users/${userId}/role-mappings/realm`, {
+        //     method: "POST",
+        //     headers: {
+        //         "Content-Type": "application/json",
+        //     },
+        //     body: JSON.stringify([
+        //         {
+        //             name: "restaurant"
+        //         }
+        //     ])
+        // }).then(res => res.json()).then(
+            
+        // );
+
         res.status(200).json({
             data: restaurant
         });
@@ -224,7 +239,7 @@ router.put('/:restaurantId/update', async (req: AuthenticatedRequest, res: Respo
     }
 });
 
-router.get('/:restaurantId/menu', async (req: Request, res: Response) => {
+router.get('/:restaurantId/menu/all', async (req: Request, res: Response) => {
     // Get all restaurant's menu
     try {
         const { restaurantId } = req.params;
@@ -304,12 +319,14 @@ router.post('/:restaurantId/menu/new', async (req: AuthenticatedRequest, res: Re
 
     // Create new menu
     try {
-        const { name } = req.body;
+        const { name, start, end } = req.body;
 
         const menu = await prisma.menu.create({
             data: {
                 name,
-                restaurantId
+                restaurantId,
+                startTime: start,
+                endTime: end
             }
         });
 
@@ -326,7 +343,87 @@ router.post('/:restaurantId/menu/new', async (req: AuthenticatedRequest, res: Re
     }
 })
 
-router.get('/:restaurantId/menu/:menuId', async (req: Request, res: Response) => {
+router.put('/:restaurantId/menu/update', async (req: AuthenticatedRequest, res: Response) => {
+    // Safely unwrap user object
+    if (!req.user) {
+        res.status(401).json({
+            error: {
+                message: "Unauthorized",
+                details: "JWT supplied is missing user information"
+            }
+        });
+        return;
+    }
+
+    // Ensure user has correct role (restaurant)
+    if (!req.user.realm_access.roles.includes("restaurant")) {
+        res.status(403).json({
+            error: {
+                message: "Forbidden",
+                details: "User does not have the correct role to perform this action"
+            }
+        });
+        return;
+    }
+
+    // Ensure user is owner of restaurant
+    const restaurantId = req.params.restaurantId;
+    const userId = req.user.sub;
+    const restaurant = await prisma.restaurant.findUnique({
+        where: {
+            id: restaurantId
+        },
+        include: {
+            restaurantOwners: true
+        }
+    });
+
+    if (!restaurant) {
+        res.status(404).json({
+            error: {
+                message: "Restaurant not found"
+            }
+        });
+        return;
+    }
+
+    const isOwner = restaurant.restaurantOwners.some(owner => owner.userId === userId);
+    if (!isOwner) {
+        res.status(403).json({
+            error: {
+                message: "Forbidden",
+                details: "User is not the owner of the restaurant"
+            }
+        });
+        return;
+    }
+
+    // Create new menu
+    try {
+        const { name, start, end } = req.body;
+
+        const menu = await prisma.menu.create({
+            data: {
+                name,
+                startTime: start,
+                endTime: end
+            }
+        });
+
+        res.status(200).json({
+            data: menu
+        });
+    } catch (error) {
+        res.status(500).json({
+            error: {
+                message: "Failed to create menu",
+                details: error
+            }
+        });
+    }
+})
+
+router.get('/:restaurantId/menu/:menuId/details', async (req: Request, res: Response) => {
     // Get restaurant's menu
     try {
         const { restaurantId, menuId } = req.params;
@@ -438,7 +535,7 @@ router.post('/:restaurantId/menu/:menuId/add', async (req: AuthenticatedRequest,
     }
 });
 
-router.put('/:restaurantId/menu/:menuId/:itemId', async (req: AuthenticatedRequest, res: Response) => {
+router.put('/:restaurantId/menu/:menuId/:itemId/update', async (req: AuthenticatedRequest, res: Response) => {
     // Safely unwrap user object
     if (!req.user) {
         res.status(401).json({
@@ -524,7 +621,7 @@ router.put('/:restaurantId/menu/:menuId/:itemId', async (req: AuthenticatedReque
     }
 });
 
-router.put('/:restaurantId/menu/:menuId/:itemId/update-availability/:availabilityState', async (req: AuthenticatedRequest, res: Response) => {
+router.put('/:restaurantId/menu/:menuId/:itemId/update/availability/:availabilityState', async (req: AuthenticatedRequest, res: Response) => {
     // Safely unwrap user object
     if (!req.user) {
         res.status(401).json({
@@ -606,7 +703,7 @@ router.put('/:restaurantId/menu/:menuId/:itemId/update-availability/:availabilit
     }
 });
 
-router.delete('/:restaurantId/menu/:menuId/:itemId', async (req: AuthenticatedRequest, res: Response) => {
+router.delete('/:restaurantId/menu/:menuId/:itemId/remove', async (req: AuthenticatedRequest, res: Response) => {
     // Safely unwrap user object
     if (!req.user) {
         res.status(401).json({
