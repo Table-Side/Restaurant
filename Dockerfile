@@ -1,10 +1,10 @@
-FROM --platform=linux/amd64 node:21.6.1 AS builder
+FROM --platform=linux/amd64 node:latest AS builder
 
 WORKDIR /app
 
 COPY package.json yarn.lock ./
 
-RUN yarn install --silent --production=true --frozen-lockfile
+RUN yarn install --silent --frozen-lockfile
 
 COPY prisma ./prisma
 COPY src ./src
