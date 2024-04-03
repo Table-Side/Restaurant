@@ -19,10 +19,10 @@ const decodeJWT = (req: AuthenticatedRequest, res: Response, next: NextFunction)
             }
 
             req.user = {
-                sub: (decoded.sub as string),
-                name: (decoded.name as string),
-                email: (decoded.email as string),
-                verified: (decoded.verified as boolean),
+                sub: decoded.sub,
+                name: decoded.name,
+                email: decoded.email,
+                verified: decoded.verified,
                 realm_access: {
                     roles: decoded.realm_access.roles
                 }
