@@ -50,7 +50,6 @@ CREATE TABLE "Item" (
     "displayName" TEXT NOT NULL,
     "shortName" TEXT NOT NULL,
     "description" TEXT NOT NULL,
-    "quantity" INTEGER NOT NULL,
     "price" DOUBLE PRECISION NOT NULL,
     "isAvailable" BOOLEAN NOT NULL DEFAULT true,
     "menuId" TEXT NOT NULL,

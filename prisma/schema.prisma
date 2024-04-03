@@ -63,7 +63,6 @@ model Item {
   displayName String
   shortName   String
   description String
-  quantity    Int
   price       Float
   isAvailable Boolean @default(true)
 
