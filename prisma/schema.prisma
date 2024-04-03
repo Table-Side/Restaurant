@@ -26,6 +26,7 @@ model RestaurantOwner {
   updatedAt DateTime @updatedAt
 
   userId       String
+  
   Restaurant   Restaurant? @relation(fields: [restaurantId], references: [id])
   restaurantId String?
 }
