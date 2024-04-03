@@ -16,6 +16,17 @@ router.get("/all", async (req: Request, res: Response) => {
 });
 
 router.get("/own", async (req: AuthenticatedRequest, res: Response) => {
+    // Safely unwrap user object
+    if (!req.user) {
+        res.status(401).json({
+            error: {
+                message: "Unauthorized",
+                details: "JWT supplied is missing user information"
+            }
+        });
+        return;
+    }
+
     // Get user's own restaurants
     try {
         const userId = req.user.sub;
@@ -44,9 +55,20 @@ router.get("/own", async (req: AuthenticatedRequest, res: Response) => {
 });
 
 router.post('/create', async (req: AuthenticatedRequest, res: Response) => {
+    // Safely unwrap user object
+    if (!req.user) {
+        res.status(401).json({
+            error: {
+                message: "Unauthorized",
+                details: "JWT supplied is missing user information"
+            }
+        });
+        return;
+    }
+
     // Create a new restaurant
     try {
-        const userId = req.user.sub;
+        const userId = req.user!.sub;
         const { name, description } = req.body;
 
         const restaurant = await prisma.restaurant.create({
@@ -105,6 +127,28 @@ router.get('/:restaurantId/details', async (req: Request, res: Response) => {
 });
 
 router.put('/:restaurantId/details', async (req: AuthenticatedRequest, res: Response) => {
+    // Safely unwrap user object
+    if (!req.user) {
+        res.status(401).json({
+            error: {
+                message: "Unauthorized",
+                details: "JWT supplied is missing user information"
+            }
+        });
+        return;
+    }
+
+    // Ensure user has correct role (restaurant)
+    if (!req.user.realm_access.roles.includes("restaurant")) {
+        res.status(403).json({
+            error: {
+                message: "Forbidden",
+                details: "User does not have the correct role to perform this action"
+            }
+        });
+        return;
+    }
+
     // TODO: Update restaurant
     
 });
@@ -133,6 +177,28 @@ router.get('/:restaurantId/menu', async (req: Request, res: Response) => {
 });
 
 router.post('/:restaurantId/menu/add', async (req: AuthenticatedRequest, res: Response) => {
+    // Safely unwrap user object
+    if (!req.user) {
+        res.status(401).json({
+            error: {
+                message: "Unauthorized",
+                details: "JWT supplied is missing user information"
+            }
+        });
+        return;
+    }
+
+    // Ensure user has correct role (restaurant)
+    if (!req.user.realm_access.roles.includes("restaurant")) {
+        res.status(403).json({
+            error: {
+                message: "Forbidden",
+                details: "User does not have the correct role to perform this action"
+            }
+        });
+        return;
+    }
+
     // Add item to restaurant's menu
     try {
         const { displayName, shortName, description, quantity, price, menuId } = req.body;
@@ -168,10 +234,54 @@ router.post('/:restaurantId/menu/add', async (req: AuthenticatedRequest, res: Re
 });
 
 router.put('/:restaurantId/menu/:itemId', async (req: AuthenticatedRequest, res: Response) => {
+    // Safely unwrap user object
+    if (!req.user) {
+        res.status(401).json({
+            error: {
+                message: "Unauthorized",
+                details: "JWT supplied is missing user information"
+            }
+        });
+        return;
+    }
+
+    // Ensure user has correct role (restaurant)
+    if (!req.user.realm_access.roles.includes("restaurant")) {
+        res.status(403).json({
+            error: {
+                message: "Forbidden",
+                details: "User does not have the correct role to perform this action"
+            }
+        });
+        return;
+    }
+
     // TODO: Update menu item
 });
 
 router.put('/:restaurantId/menu/:itemId/update-availability/:availabilityState', async (req: AuthenticatedRequest, res: Response) => {
+    // Safely unwrap user object
+    if (!req.user) {
+        res.status(401).json({
+            error: {
+                message: "Unauthorized",
+                details: "JWT supplied is missing user information"
+            }
+        });
+        return;
+    }
+
+    // Ensure user has correct role (restaurant)
+    if (!req.user.realm_access.roles.includes("restaurant")) {
+        res.status(403).json({
+            error: {
+                message: "Forbidden",
+                details: "User does not have the correct role to perform this action"
+            }
+        });
+        return;
+    }
+
     // Update menu item availability
     try {
         const { itemId, availabilityState } = req.params;
@@ -199,6 +309,28 @@ router.put('/:restaurantId/menu/:itemId/update-availability/:availabilityState',
 });
 
 router.delete('/:restaurantId/menu/:itemId', async (req: AuthenticatedRequest, res: Response) => {
+    // Safely unwrap user object
+    if (!req.user) {
+        res.status(401).json({
+            error: {
+                message: "Unauthorized",
+                details: "JWT supplied is missing user information"
+            }
+        });
+        return;
+    }
+
+    // Ensure user has correct role (restaurant)
+    if (!req.user.realm_access.roles.includes("restaurant")) {
+        res.status(403).json({
+            error: {
+                message: "Forbidden",
+                details: "User does not have the correct role to perform this action"
+            }
+        });
+        return;
+    }
+    
     // Delete menu item
     try {
         const { itemId } = req.params;
