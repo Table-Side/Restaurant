@@ -47,7 +47,9 @@ model Menu {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name String
+  name      String
+  startTime String
+  endTime   String
 
   items Item[]
 
