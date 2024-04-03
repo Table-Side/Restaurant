@@ -54,7 +54,7 @@ jobs:
       - name: Trigger API deployment workflow
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.API_DEPLOY_PAT }}
           script: |
             await github.rest.actions.createWorkflowDispatch({
               owner: 'Table-Side',
