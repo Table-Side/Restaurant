@@ -17,7 +17,7 @@ router.get("/all", async (req: Request, res: Response) => {
     }
 });
 
-router.get("/own", async (req: AuthenticatedRequest, res: Response) => {
+router.get("/mine", async (req: AuthenticatedRequest, res: Response) => {
     // Safely unwrap user object
     if (!req.user) {
         res.status(401).json({
@@ -29,7 +29,7 @@ router.get("/own", async (req: AuthenticatedRequest, res: Response) => {
         return;
     }
 
-    // Get user's own restaurants
+    // Get user's restaurants
     try {
         const userId = req.user.sub;
 
@@ -71,7 +71,7 @@ router.post('/create', async (req: AuthenticatedRequest, res: Response) => {
     // Create a new restaurant
     try {
         const userId = req.user!.sub;
-        const { name, description } = req.body;
+        const { name, description, numberOfTables } = req.body;
 
         const restaurant = await prisma.restaurant.create({
             data: {
@@ -84,6 +84,20 @@ router.post('/create', async (req: AuthenticatedRequest, res: Response) => {
                 }
             }
         });
+
+        // Create tables for the restaurant
+        for (let i = 1; i <= numberOfTables; i++) {
+            await prisma.restaurantTable.create({
+                data: {
+                    Restaurant: {
+                        connect: {
+                            id: restaurant.id
+                        }
+                    },
+                    number: i
+                }
+            });
+        }
 
         res.status(200).json({
             data: restaurant
@@ -151,8 +165,63 @@ router.put('/:restaurantId/details', async (req: AuthenticatedRequest, res: Resp
         return;
     }
 
-    // TODO: Update restaurant
-    
+    // Ensure user is owner of restaurant
+    const restaurantId = req.params.restaurantId;
+    const userId = req.user.sub;
+    const restaurant = await prisma.restaurant.findUnique({
+        where: {
+            id: restaurantId
+        },
+        include: {
+            restaurantOwners: true
+        }
+    });
+
+    if (!restaurant) {
+        res.status(404).json({
+            error: {
+                message: "Restaurant not found"
+            }
+        });
+        return;
+    }
+
+    const isOwner = restaurant.restaurantOwners.some(owner => owner.userId === userId);
+    if (!isOwner) {
+        res.status(403).json({
+            error: {
+                message: "Forbidden",
+                details: "User is not the owner of the restaurant"
+            }
+        });
+        return;
+    }
+
+    // Update restaurant
+    try {
+        const { name, description } = req.body;
+
+        const updatedRestaurant = await prisma.restaurant.update({
+            where: {
+                id: restaurantId
+            },
+            data: {
+                name,
+                description
+            }
+        });
+
+        res.status(200).json({
+            data: updatedRestaurant
+        });
+    } catch (error) {
+        res.status(500).json({
+            error: {
+                message: "Failed to update restaurant",
+                details: error
+            }
+        });
+    }
 });
 
 router.get('/:restaurantId/menu', async (req: Request, res: Response) => {
@@ -196,6 +265,38 @@ router.post('/:restaurantId/menu/add', async (req: AuthenticatedRequest, res: Re
             error: {
                 message: "Forbidden",
                 details: "User does not have the correct role to perform this action"
+            }
+        });
+        return;
+    }
+
+    // Ensure user is owner of restaurant
+    const restaurantId = req.params.restaurantId;
+    const userId = req.user.sub;
+    const restaurant = await prisma.restaurant.findUnique({
+        where: {
+            id: restaurantId
+        },
+        include: {
+            restaurantOwners: true
+        }
+    });
+
+    if (!restaurant) {
+        res.status(404).json({
+            error: {
+                message: "Restaurant not found"
+            }
+        });
+        return;
+    }
+
+    const isOwner = restaurant.restaurantOwners.some(owner => owner.userId === userId);
+    if (!isOwner) {
+        res.status(403).json({
+            error: {
+                message: "Forbidden",
+                details: "User is not the owner of the restaurant"
             }
         });
         return;
@@ -258,7 +359,67 @@ router.put('/:restaurantId/menu/:itemId', async (req: AuthenticatedRequest, res:
         return;
     }
 
-    // TODO: Update menu item
+    // Ensure user is owner of restaurant
+    const restaurantId = req.params.restaurantId;
+    const userId = req.user.sub;
+    const restaurant = await prisma.restaurant.findUnique({
+        where: {
+            id: restaurantId
+        },
+        include: {
+            restaurantOwners: true
+        }
+    });
+
+    if (!restaurant) {
+        res.status(404).json({
+            error: {
+                message: "Restaurant not found"
+            }
+        });
+        return;
+    }
+
+    const isOwner = restaurant.restaurantOwners.some(owner => owner.userId === userId);
+    if (!isOwner) {
+        res.status(403).json({
+            error: {
+                message: "Forbidden",
+                details: "User is not the owner of the restaurant"
+            }
+        });
+        return;
+    }
+
+    // Update menu item
+    try {
+        const { itemId } = req.params;
+        const { displayName, shortName, description, quantity, price } = req.body;
+
+        const item = await prisma.item.update({
+            where: {
+                id: itemId
+            },
+            data: {
+                displayName,
+                shortName,
+                description,
+                quantity,
+                price
+            }
+        });
+
+        res.status(200).json({
+            data: item
+        });
+    } catch (error) {
+        res.status(500).json({
+            error: {
+                message: "Failed to update item",
+                details: error
+            }
+        });
+    }
 });
 
 router.put('/:restaurantId/menu/:itemId/update-availability/:availabilityState', async (req: AuthenticatedRequest, res: Response) => {
@@ -279,6 +440,38 @@ router.put('/:restaurantId/menu/:itemId/update-availability/:availabilityState',
             error: {
                 message: "Forbidden",
                 details: "User does not have the correct role to perform this action"
+            }
+        });
+        return;
+    }
+
+    // Ensure user is owner of restaurant
+    const restaurantId = req.params.restaurantId;
+    const userId = req.user.sub;
+    const restaurant = await prisma.restaurant.findUnique({
+        where: {
+            id: restaurantId
+        },
+        include: {
+            restaurantOwners: true
+        }
+    });
+
+    if (!restaurant) {
+        res.status(404).json({
+            error: {
+                message: "Restaurant not found"
+            }
+        });
+        return;
+    }
+
+    const isOwner = restaurant.restaurantOwners.some(owner => owner.userId === userId);
+    if (!isOwner) {
+        res.status(403).json({
+            error: {
+                message: "Forbidden",
+                details: "User is not the owner of the restaurant"
             }
         });
         return;
