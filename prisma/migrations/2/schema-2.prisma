@@ -65,7 +65,7 @@ model Item {
   displayName String
   shortName   String
   description String
-  price       Decimal @db.Money
+  price       Float
   isAvailable Boolean @default(true)
 
   menuId String
