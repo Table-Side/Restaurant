@@ -269,11 +269,10 @@ router.get('/:restaurantId/menu/:menuId/details', async (req: Request, res: Resp
     }
 });
 
-router.post('/:restaurantId/menu/:menuId/add', isAuthenticated, hasRole("restaurant"), isRestaurantOwner, async (req: AuthenticatedRequest, res: Response) => {
+router.post('/:restaurantId/items/create', isAuthenticated, hasRole("restaurant"), isRestaurantOwner, async (req: AuthenticatedRequest, res: Response) => {
     // Add item to restaurant's menu
     try {
-        const { displayName, shortName, description, price } = req.body;
-        const { menuId } = req.params;
+        const { menuId, displayName, shortName, description, price } = req.body;
 
         const item = await prisma.item.create({
             data: {
@@ -285,9 +284,20 @@ router.post('/:restaurantId/menu/:menuId/add', isAuthenticated, hasRole("restaur
             }
         });
 
+        if (!item) {
+            res.status(500).json({
+                error: {
+                    message: "Fail ed to add item to menu"
+                }
+            });
+        }
+
         const menu = await prisma.menu.findUnique({
             where: {
                 id: menuId
+            },
+            include: {
+                items: true
             }
         });
 
@@ -304,16 +314,15 @@ router.post('/:restaurantId/menu/:menuId/add', isAuthenticated, hasRole("restaur
     }
 });
 
-router.put('/:restaurantId/menu/:menuId/:itemId/update', isAuthenticated, hasRole("restaurant"), isRestaurantOwner, async (req: AuthenticatedRequest, res: Response) => {
+router.put('/:restaurantId/items/:itemId/update', isAuthenticated, hasRole("restaurant"), isRestaurantOwner, async (req: AuthenticatedRequest, res: Response) => {
     // Update menu item
     try {
-        const { itemId, menuId } = req.params;
+        const { itemId } = req.params;
         const { displayName, shortName, description, price } = req.body;
 
         const item = await prisma.item.update({
             where: {
-                id: itemId,
-                menuId: menuId
+                id: itemId
             },
             data: {
                 displayName,
@@ -336,14 +345,13 @@ router.put('/:restaurantId/menu/:menuId/:itemId/update', isAuthenticated, hasRol
     }
 });
 
-router.put('/:restaurantId/menu/:menuId/:itemId/update/availability/:availabilityState', isAuthenticated, hasRole("restaurant"), isRestaurantOwner, async (req: AuthenticatedRequest, res: Response) => {
+router.put('/:restaurantId/items/:itemId/update/availability/:availabilityState', isAuthenticated, hasRole("restaurant"), isRestaurantOwner, async (req: AuthenticatedRequest, res: Response) => {
     // Update menu item availability
     try {
-        const { itemId, menuId, availabilityState } = req.params;
+        const { itemId, availabilityState } = req.params;
 
         const item = await prisma.item.update({
-            where: {
-                menuId: menuId,
+            where: {                
                 id: itemId
             },
             data: {
@@ -364,15 +372,14 @@ router.put('/:restaurantId/menu/:menuId/:itemId/update/availability/:availabilit
     }
 });
 
-router.delete('/:restaurantId/menu/:menuId/:itemId/remove', isAuthenticated, hasRole("restaurant"), isRestaurantOwner, async (req: AuthenticatedRequest, res: Response) => {
+router.delete('/:restaurantId/items/:itemId/remove', isAuthenticated, hasRole("restaurant"), isRestaurantOwner, async (req: AuthenticatedRequest, res: Response) => {
     // Delete menu item
     try {
-        const { itemId, menuId } = req.params;
+        const { itemId } = req.params;
 
         await prisma.item.delete({
             where: {
-                id: itemId,
-                menuId: menuId,
+                id: itemId
             }
         });
 

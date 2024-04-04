@@ -114,7 +114,7 @@ None
 }
 ```
 
-### GET `/restaurants/:restaurantId/menu`: Get all menus for restaurant
+### GET `/restaurants/:restaurantId/menu/all`: Get all menus for restaurant
 
 - Authentication?: No
 
@@ -208,18 +208,18 @@ None
 }
 ```
 
-### POST `/restaurants/:restaurantId/menu/:menuId/add`: Add an item to a menu
+### POST `/restaurants/:restaurantId/items/create`: Add an item to a menu
 
 - Authentication?: Yes
   - Role: `restaurant`
 
 #### Params
 - restaurantId: The ID of the restaurant. `String (UUID)`
-- menuId: The ID of the menu. `String (UUID)`
 
 #### Request Body
 ```json
 {
+    "menuId": "",
     "displayName": "Cheesy Chips",
     "shortName": "C Chips",
     "description": "A plate of chips, loaded with a mix of mozzarella, cheddar and cheese sauce.",
@@ -240,14 +240,13 @@ None
 }
 ```
 
-### PUT `/restaurants/:restaurantId/menu/:menuId/:itemId/update`: Update an item on the menu
+### PUT `/restaurants/:restaurantId/items/:itemId/update`: Update an item on the menu
 
 - Authentication?: Yes
   - Role: `restaurant`
 
 #### Params
 - restaurantId: The ID of the restaurant. `String (UUID)`
-- menuId: The ID of the menu. `String (UUID)`
 - itemId: The ID of the item. `String (UUID)`
 
 #### Request Body
@@ -273,14 +272,13 @@ None
 }
 ```
 
-### PUT `/restaurants/:restaurantId/menu/:menuId/:itemId/update/availability/:availabilityState`: Update whether an item is available for ordering
+### PUT `/restaurants/:restaurantId/items/:itemId/update/availability/:availabilityState`: Update whether an item is available for ordering
 
 - Authentication?: Yes
   - Role: `restaurant`
 
 #### Params
 - restaurantId: The ID of the restaurant. `String (UUID)`
-- menuId: The ID of the menu. `String (UUID)`
 - itemId: The ID of the item. `String (UUID)`
 - availabilityState: The new availability state of the menu item. `Boolean (true/false)`
 
@@ -297,14 +295,13 @@ None
 }
 ```
 
-### DELETE `/:restaurantId/menu/:menuId/:itemId/remove`: Remove an item from a menu
+### DELETE `/:restaurantId/items/:itemId/remove`: Remove an item from a menu
 
 - Authentication?: Yes
   - Role: `restaurant`
 
 #### Params
 - restaurantId: The ID of the restaurant. `String (UUID)`
-- menuId: The ID of the menu. `String (UUID)`
 - itemId: The ID of the item. `String (UUID)`
 
 #### Request Body
