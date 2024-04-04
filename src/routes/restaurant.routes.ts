@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import prisma from "../config/prisma";
 import { AuthenticatedRequest } from "../interfaces";
+import { hasRole, isAuthenticated, isRestaurantOwner } from "../middleware";
 
 const router = Router();
 
@@ -17,18 +18,7 @@ router.get("/all", async (req: Request, res: Response) => {
     }
 });
 
-router.get("/mine", async (req: AuthenticatedRequest, res: Response) => {
-    // Safely unwrap user object
-    if (!req.user) {
-        res.status(401).json({
-            error: {
-                message: "Unauthorized",
-                details: "JWT supplied is missing user information"
-            }
-        });
-        return;
-    }
-
+router.get("/mine", isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     // Get user's restaurants
     try {
         const userId = req.user.sub;
@@ -56,18 +46,7 @@ router.get("/mine", async (req: AuthenticatedRequest, res: Response) => {
     }
 });
 
-router.post('/create', async (req: AuthenticatedRequest, res: Response) => {
-    // Safely unwrap user object
-    if (!req.user) {
-        res.status(401).json({
-            error: {
-                message: "Unauthorized",
-                details: "JWT supplied is missing user information"
-            }
-        });
-        return;
-    }
-
+router.post('/create', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
     // Create a new restaurant
     try {
         const userId = req.user!.sub;
@@ -157,64 +136,11 @@ router.get('/:restaurantId/details', async (req: Request, res: Response) => {
     }
 });
 
-router.put('/:restaurantId/update', async (req: AuthenticatedRequest, res: Response) => {
-    // Safely unwrap user object
-    if (!req.user) {
-        res.status(401).json({
-            error: {
-                message: "Unauthorized",
-                details: "JWT supplied is missing user information"
-            }
-        });
-        return;
-    }
-
-    // Ensure user has correct role (restaurant)
-    if (!req.user.realm_access.roles.includes("restaurant")) {
-        res.status(403).json({
-            error: {
-                message: "Forbidden",
-                details: "User does not have the correct role to perform this action"
-            }
-        });
-        return;
-    }
-
-    // Ensure user is owner of restaurant
-    const restaurantId = req.params.restaurantId;
-    const userId = req.user.sub;
-    const restaurant = await prisma.restaurant.findUnique({
-        where: {
-            id: restaurantId
-        },
-        include: {
-            restaurantOwners: true
-        }
-    });
-
-    if (!restaurant) {
-        res.status(404).json({
-            error: {
-                message: "Restaurant not found"
-            }
-        });
-        return;
-    }
-
-    const isOwner = restaurant.restaurantOwners.some(owner => owner.userId === userId);
-    if (!isOwner) {
-        res.status(403).json({
-            error: {
-                message: "Forbidden",
-                details: "User is not the owner of the restaurant"
-            }
-        });
-        return;
-    }
-
+router.put('/:restaurantId/update', isAuthenticated, hasRole("restaurant"), isRestaurantOwner, async (req: AuthenticatedRequest, res: Response) => {
     // Update restaurant
     try {
         const { name, description } = req.body;
+        const { restaurantId } = req.params;
 
         const updatedRestaurant = await prisma.restaurant.update({
             where: {
@@ -262,63 +188,10 @@ router.get('/:restaurantId/menu/all', async (req: Request, res: Response) => {
     }
 });
 
-router.post('/:restaurantId/menu/new', async (req: AuthenticatedRequest, res: Response) => {
-    // Safely unwrap user object
-    if (!req.user) {
-        res.status(401).json({
-            error: {
-                message: "Unauthorized",
-                details: "JWT supplied is missing user information"
-            }
-        });
-        return;
-    }
-
-    // Ensure user has correct role (restaurant)
-    if (!req.user.realm_access.roles.includes("restaurant")) {
-        res.status(403).json({
-            error: {
-                message: "Forbidden",
-                details: "User does not have the correct role to perform this action"
-            }
-        });
-        return;
-    }
-
-    // Ensure user is owner of restaurant
-    const restaurantId = req.params.restaurantId;
-    const userId = req.user.sub;
-    const restaurant = await prisma.restaurant.findUnique({
-        where: {
-            id: restaurantId
-        },
-        include: {
-            restaurantOwners: true
-        }
-    });
-
-    if (!restaurant) {
-        res.status(404).json({
-            error: {
-                message: "Restaurant not found"
-            }
-        });
-        return;
-    }
-
-    const isOwner = restaurant.restaurantOwners.some(owner => owner.userId === userId);
-    if (!isOwner) {
-        res.status(403).json({
-            error: {
-                message: "Forbidden",
-                details: "User is not the owner of the restaurant"
-            }
-        });
-        return;
-    }
-
+router.post('/:restaurantId/menu/new', isAuthenticated, hasRole("restaurant"), isRestaurantOwner, async (req: AuthenticatedRequest, res: Response) => {
     // Create new menu
     try {
+        const { restaurantId } = req.params;
         const { name, start, end } = req.body;
 
         const menu = await prisma.menu.create({
@@ -343,75 +216,24 @@ router.post('/:restaurantId/menu/new', async (req: AuthenticatedRequest, res: Re
     }
 })
 
-router.put('/:restaurantId/menu/update', async (req: AuthenticatedRequest, res: Response) => {
-    // Safely unwrap user object
-    if (!req.user) {
-        res.status(401).json({
-            error: {
-                message: "Unauthorized",
-                details: "JWT supplied is missing user information"
-            }
-        });
-        return;
-    }
-
-    // Ensure user has correct role (restaurant)
-    if (!req.user.realm_access.roles.includes("restaurant")) {
-        res.status(403).json({
-            error: {
-                message: "Forbidden",
-                details: "User does not have the correct role to perform this action"
-            }
-        });
-        return;
-    }
-
-    // Ensure user is owner of restaurant
-    const restaurantId = req.params.restaurantId;
-    const userId = req.user.sub;
-    const restaurant = await prisma.restaurant.findUnique({
-        where: {
-            id: restaurantId
-        },
-        include: {
-            restaurantOwners: true
-        }
-    });
-
-    if (!restaurant) {
-        res.status(404).json({
-            error: {
-                message: "Restaurant not found"
-            }
-        });
-        return;
-    }
-
-    const isOwner = restaurant.restaurantOwners.some(owner => owner.userId === userId);
-    if (!isOwner) {
-        res.status(403).json({
-            error: {
-                message: "Forbidden",
-                details: "User is not the owner of the restaurant"
-            }
-        });
-        return;
-    }
-
+router.put('/:restaurantId/menu/:menuId/update', isAuthenticated, hasRole("restaurant"), isRestaurantOwner, async (req: AuthenticatedRequest, res: Response) => {
     // Create new menu
     try {
+        const { menuId } = req.params
         const { name, start, end } = req.body;
 
-        const menu = await prisma.menu.create({
+        const updatedMenu = await prisma.menu.update({
+            where: {
+                id: menuId
+            },
             data: {
                 name,
                 startTime: start,
                 endTime: end
             }
         });
-
         res.status(200).json({
-            data: menu
+            data: updatedMenu
         });
     } catch (error) {
         res.status(500).json({
@@ -447,64 +269,11 @@ router.get('/:restaurantId/menu/:menuId/details', async (req: Request, res: Resp
     }
 });
 
-router.post('/:restaurantId/menu/:menuId/add', async (req: AuthenticatedRequest, res: Response) => {
-    // Safely unwrap user object
-    if (!req.user) {
-        res.status(401).json({
-            error: {
-                message: "Unauthorized",
-                details: "JWT supplied is missing user information"
-            }
-        });
-        return;
-    }
-
-    // Ensure user has correct role (restaurant)
-    if (!req.user.realm_access.roles.includes("restaurant")) {
-        res.status(403).json({
-            error: {
-                message: "Forbidden",
-                details: "User does not have the correct role to perform this action"
-            }
-        });
-        return;
-    }
-
-    // Ensure user is owner of restaurant
-    const { restaurantId, menuId } = req.params;
-    const userId = req.user.sub;
-    const restaurant = await prisma.restaurant.findUnique({
-        where: {
-            id: restaurantId
-        },
-        include: {
-            restaurantOwners: true
-        }
-    });
-
-    if (!restaurant) {
-        res.status(404).json({
-            error: {
-                message: "Restaurant not found"
-            }
-        });
-        return;
-    }
-
-    const isOwner = restaurant.restaurantOwners.some(owner => owner.userId === userId);
-    if (!isOwner) {
-        res.status(403).json({
-            error: {
-                message: "Forbidden",
-                details: "User is not the owner of the restaurant"
-            }
-        });
-        return;
-    }
-
+router.post('/:restaurantId/menu/:menuId/add', isAuthenticated, hasRole("restaurant"), isRestaurantOwner, async (req: AuthenticatedRequest, res: Response) => {
     // Add item to restaurant's menu
     try {
         const { displayName, shortName, description, price } = req.body;
+        const { menuId } = req.params;
 
         const item = await prisma.item.create({
             data: {
@@ -535,61 +304,7 @@ router.post('/:restaurantId/menu/:menuId/add', async (req: AuthenticatedRequest,
     }
 });
 
-router.put('/:restaurantId/menu/:menuId/:itemId/update', async (req: AuthenticatedRequest, res: Response) => {
-    // Safely unwrap user object
-    if (!req.user) {
-        res.status(401).json({
-            error: {
-                message: "Unauthorized",
-                details: "JWT supplied is missing user information"
-            }
-        });
-        return;
-    }
-
-    // Ensure user has correct role (restaurant)
-    if (!req.user.realm_access.roles.includes("restaurant")) {
-        res.status(403).json({
-            error: {
-                message: "Forbidden",
-                details: "User does not have the correct role to perform this action"
-            }
-        });
-        return;
-    }
-
-    // Ensure user is owner of restaurant
-    const restaurantId = req.params.restaurantId;
-    const userId = req.user.sub;
-    const restaurant = await prisma.restaurant.findUnique({
-        where: {
-            id: restaurantId
-        },
-        include: {
-            restaurantOwners: true
-        }
-    });
-
-    if (!restaurant) {
-        res.status(404).json({
-            error: {
-                message: "Restaurant not found"
-            }
-        });
-        return;
-    }
-
-    const isOwner = restaurant.restaurantOwners.some(owner => owner.userId === userId);
-    if (!isOwner) {
-        res.status(403).json({
-            error: {
-                message: "Forbidden",
-                details: "User is not the owner of the restaurant"
-            }
-        });
-        return;
-    }
-
+router.put('/:restaurantId/menu/:menuId/:itemId/update', isAuthenticated, hasRole("restaurant"), isRestaurantOwner, async (req: AuthenticatedRequest, res: Response) => {
     // Update menu item
     try {
         const { itemId, menuId } = req.params;
@@ -621,61 +336,7 @@ router.put('/:restaurantId/menu/:menuId/:itemId/update', async (req: Authenticat
     }
 });
 
-router.put('/:restaurantId/menu/:menuId/:itemId/update/availability/:availabilityState', async (req: AuthenticatedRequest, res: Response) => {
-    // Safely unwrap user object
-    if (!req.user) {
-        res.status(401).json({
-            error: {
-                message: "Unauthorized",
-                details: "JWT supplied is missing user information"
-            }
-        });
-        return;
-    }
-
-    // Ensure user has correct role (restaurant)
-    if (!req.user.realm_access.roles.includes("restaurant")) {
-        res.status(403).json({
-            error: {
-                message: "Forbidden",
-                details: "User does not have the correct role to perform this action"
-            }
-        });
-        return;
-    }
-
-    // Ensure user is owner of restaurant
-    const restaurantId = req.params.restaurantId;
-    const userId = req.user.sub;
-    const restaurant = await prisma.restaurant.findUnique({
-        where: {
-            id: restaurantId
-        },
-        include: {
-            restaurantOwners: true
-        }
-    });
-
-    if (!restaurant) {
-        res.status(404).json({
-            error: {
-                message: "Restaurant not found"
-            }
-        });
-        return;
-    }
-
-    const isOwner = restaurant.restaurantOwners.some(owner => owner.userId === userId);
-    if (!isOwner) {
-        res.status(403).json({
-            error: {
-                message: "Forbidden",
-                details: "User is not the owner of the restaurant"
-            }
-        });
-        return;
-    }
-
+router.put('/:restaurantId/menu/:menuId/:itemId/update/availability/:availabilityState', isAuthenticated, hasRole("restaurant"), isRestaurantOwner, async (req: AuthenticatedRequest, res: Response) => {
     // Update menu item availability
     try {
         const { itemId, menuId, availabilityState } = req.params;
@@ -703,29 +364,7 @@ router.put('/:restaurantId/menu/:menuId/:itemId/update/availability/:availabilit
     }
 });
 
-router.delete('/:restaurantId/menu/:menuId/:itemId/remove', async (req: AuthenticatedRequest, res: Response) => {
-    // Safely unwrap user object
-    if (!req.user) {
-        res.status(401).json({
-            error: {
-                message: "Unauthorized",
-                details: "JWT supplied is missing user information"
-            }
-        });
-        return;
-    }
-
-    // Ensure user has correct role (restaurant)
-    if (!req.user.realm_access.roles.includes("restaurant")) {
-        res.status(403).json({
-            error: {
-                message: "Forbidden",
-                details: "User does not have the correct role to perform this action"
-            }
-        });
-        return;
-    }
-    
+router.delete('/:restaurantId/menu/:menuId/:itemId/remove', isAuthenticated, hasRole("restaurant"), isRestaurantOwner, async (req: AuthenticatedRequest, res: Response) => {
     // Delete menu item
     try {
         const { itemId, menuId } = req.params;

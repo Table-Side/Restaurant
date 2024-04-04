@@ -160,6 +160,33 @@ None
 }
 ```
 
+### PUT `/restaurants/:restaurantId/menu/:menuId/update`: Update a menu for a restaurant
+
+- Authentication?: Yes
+  - Role: `restaurant`
+
+#### Params
+- restaurantId: The ID of the restaurant. `String (UUID)`
+- menuId: The ID of the menu. `String (UUID)`
+
+#### Request Body
+```json
+{
+    "name": "Lunch",
+    "validFrom": "12:00:00",
+    "validUntil": "21:00:00"
+}
+```
+
+#### Response Body
+```json
+{
+    "data": {
+        // todo
+    }
+}
+```
+
 ### GET `/restaurants/:restaurantId/menu/:menuId/details`: Get a specific menu for a restaurant
 
 - Authentication?: No
