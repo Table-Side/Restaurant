@@ -48,8 +48,6 @@ model Menu {
   updatedAt DateTime @updatedAt
 
   name      String
-  startTime String
-  endTime   String
 
   items Item[]
 
