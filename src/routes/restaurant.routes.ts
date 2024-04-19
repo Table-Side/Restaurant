@@ -192,14 +192,12 @@ router.post('/:restaurantId/menu/new', isAuthenticated, hasRole("restaurant"), i
     // Create new menu
     try {
         const { restaurantId } = req.params;
-        const { name, start, end } = req.body;
+        const { name } = req.body;
 
         const menu = await prisma.menu.create({
             data: {
                 name,
                 restaurantId,
-                startTime: start,
-                endTime: end
             }
         });
 
@@ -220,16 +218,14 @@ router.put('/:restaurantId/menu/:menuId/update', isAuthenticated, hasRole("resta
     // Create new menu
     try {
         const { menuId } = req.params
-        const { name, start, end } = req.body;
+        const { name } = req.body;
 
         const updatedMenu = await prisma.menu.update({
             where: {
                 id: menuId
             },
             data: {
-                name,
-                startTime: start,
-                endTime: end
+                name
             }
         });
         res.status(200).json({
