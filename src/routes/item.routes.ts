@@ -5,7 +5,7 @@ import { ownsRestaurant, populateFromItem, populateFromMenu } from "../middlewar
 
 const router = Router({ mergeParams: true });
 
-router.get('/', populateFromMenu, ...ownsRestaurant, async (req: AuthenticatedRequest, res: Response) => {
+router.get('/', populateFromMenu, async (req: AuthenticatedRequest, res: Response) => {
     // Get all items from restaurant's menu
     try {
         const { menuId } = req.params;

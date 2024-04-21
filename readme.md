@@ -2,6 +2,13 @@
 
 The microservice responsible for restaurant details.
 
+## Types
+
+- **`Boolean`**: `true` or `false`
+- **`String`**: standard UTF-8 string
+- **`DateTime`**: ISO-8601 formatted date string.
+- **`Decimal`**: a decimal number - sent down as a string for interoperability, but can be specified as a number or a string
+
 ## Models
 
 ### Restaurant
@@ -78,6 +85,10 @@ Manage an entire [**Restaurant**](#restaurant).
 
 - **PUT** `/restaurants`: Create a new restaurant
 
+    - **Requires**:
+        - authentication
+        - `restaurant` role
+
     - **Example Request Body**:
     ```json
     {
@@ -100,6 +111,11 @@ Manage an entire [**Restaurant**](#restaurant).
 
 - **PATCH** `/restaurants/:id`: Update a specific restaurant by its ID
 
+    - **Requires**:
+        - authentication
+        - `restaurant` role
+        - ownership of the specified restaurant
+
     - **Example Request Body**:
     ```json
     {
@@ -121,6 +137,11 @@ Manage an entire [**Restaurant**](#restaurant).
     ```
 
 - **DELETE** `/restaurants/:id`: Delete a specific restaurant by its ID
+
+    - **Requires**:
+        - authentication
+        - `restaurant` role
+        - ownership of the specified restaurant
 
     - **Example Response** (204: No Content)
 
@@ -152,7 +173,7 @@ Manage [**Menu**](#menu)s for a [**Restaurant**](#restaurant).
     }
     ```
 
-- **GET** `/restaurants/:id/menus/:menuId`: Get a specific restaurant menu by its ID
+- **GET** `/restaurants/:id/menus/:menuId`: Get a specific restaurant menu by its ID (plus its items)
 
     - **Example Response** (200: OK):
     ```json
@@ -182,6 +203,11 @@ Manage [**Menu**](#menu)s for a [**Restaurant**](#restaurant).
 
 - **PUT** `/restaurants/:id/menus`: Create a restaurant menu
 
+    - **Requires**:
+        - authentication
+        - `restaurant` role
+        - ownership of the specified restaurant
+
     - **Example Request Body**
     ```json
     {
@@ -202,6 +228,11 @@ Manage [**Menu**](#menu)s for a [**Restaurant**](#restaurant).
     ```
 
 - **PATCH** `/restaurants/:id/menus/:menuId`: Update a restaurant menu by its ID
+
+    - **Requires**:
+        - authentication
+        - `restaurant` role
+        - ownership of the specified restaurant
 
     - **Example Request Body**
     ```json
@@ -224,6 +255,11 @@ Manage [**Menu**](#menu)s for a [**Restaurant**](#restaurant).
 
 - **DELETE** `/restaurants/:id/menus/:menuId`: Delete a specific menu by its ID for a specific restaurant by its ID
 
+    - **Requires**:
+        - authentication
+        - `restaurant` role
+        - ownership of the specified restaurant
+
     - **Example Response** (204: No Content)
 
 ### Items
@@ -237,14 +273,15 @@ Manage [**Item**](#item)s for a [**Menu**](#menu).
     {
         "data": [
             {
-                "id": "3a01eb6b-6da2-4a1e-8947-c52c219ab1e1",
-                "name": "Eggs Benedict",
-                "price": 9.99
-            },
-            {
-                "id": "a93c4144-5a8b-4cad-8c8a-15ac89281e6a",
-                "name": "Pancake Stack",
-                "price": 7.99
+                "id": "d1eb3a7c-8ec5-4f04-b6a0-275e37691305",
+                "createdAt": "2024-04-21T02:43:28.552Z",
+                "updatedAt": "2024-04-21T03:45:41.498Z",
+                "displayName": "Cheesy Chips",
+                "shortName": "Chips",
+                "description": "A plate of chips, loaded with a mix of mozzarella, cheddar and cheese sauce.",
+                "price": "9.91",
+                "isAvailable": true,
+                "menuId": "3f5945d7-cda8-441a-b143-d275c1e2a6df"
             }
         ]
     }
@@ -252,30 +289,68 @@ Manage [**Item**](#item)s for a [**Menu**](#menu).
 
 - **PUT** `/restaurants/:id/menus/:menuId/items`: Add a new item to a specific menu by its ID
 
+    - **Requires**:
+        - authentication
+        - `restaurant` role
+        - ownership of the specified restaurant
+
     - **Example Request Body**
     ```json
     {
-        "name": "French Toast",
-        "price": 8.99
+        "displayName": "French Toast",
+        "shortName": "French Toast",
+        "description": "Toast... but French.",
+        "price": 8.29
     }
     ```
     - **Example Response** (200: OK):
     ```json
     {
         "data": {
-            "id": "50a3a029-4c02-45b8-9da1-11e892d33f80",
-            "name": "French Toast",
-            "price": 8.99
+            "id": "3f5945d7-cda8-441a-b143-d275c1e2a6df",
+            "createdAt": "2024-04-21T02:37:37.006Z",
+            "updatedAt": "2024-04-21T02:59:49.854Z",
+            "name": "Specials",
+            "restaurantId": "87609a67-fd64-49a1-ac15-7408a39b9739",
+            "items": [
+                {
+                    "id": "d1eb3a7c-8ec5-4f04-b6a0-275e37691305",
+                    "createdAt": "2024-04-21T02:43:28.552Z",
+                    "updatedAt": "2024-04-21T03:45:41.498Z",
+                    "displayName": "Cheesy Chips",
+                    "shortName": "Chips",
+                    "description": "A plate of chips, loaded with a mix of mozzarella, cheddar and cheese sauce.",
+                    "price": "9.91",
+                    "isAvailable": true,
+                    "menuId": "3f5945d7-cda8-441a-b143-d275c1e2a6df"
+                },
+                {
+                    "id": "e9769b53-7e86-40dc-9fff-f535868630bb",
+                    "createdAt": "2024-04-21T03:47:11.477Z",
+                    "updatedAt": "2024-04-21T03:47:11.477Z",
+                    "displayName": "French Toast",
+                    "shortName": "French Toast",
+                    "description": "Toast... but French.",
+                    "price": "8.29",
+                    "isAvailable": true,
+                    "menuId": "3f5945d7-cda8-441a-b143-d275c1e2a6df"
+                }
+            ]
         }
     }
     ```
 
 - **PATCH** `/restaurants/:id/menus/:menuId/items/:itemId`: Update an item by its ID for a specific menu
 
+    - **Requires**:
+        - authentication
+        - `restaurant` role
+        - ownership of the specified restaurant
+
     - **Example Request Body**
     ```json
     {
-        "name": "French Toast Deluxe",
+        "name": "Cheesy Chips Deluxe",
         "price": 9.99
     }
     ```
@@ -283,13 +358,54 @@ Manage [**Item**](#item)s for a [**Menu**](#menu).
     ```json
     {
         "data": {
-            "id": "50a3a029-4c02-45b8-9da1-11e892d33f80",
-            "name": "French Toast Deluxe",
-            "price": 9.99
+            "id": "d1eb3a7c-8ec5-4f04-b6a0-275e37691305",
+            "createdAt": "2024-04-21T02:43:28.552Z",
+            "updatedAt": "2024-04-21T03:41:46.918Z",
+            "displayName": "Cheesy Chips Deluxe",
+            "shortName": "Chips",
+            "description": "A plate of chips, loaded with a mix of mozzarella, cheddar and cheese sauce.",
+            "price": "9.99",
+            "isAvailable": false,
+            "menuId": "3f5945d7-cda8-441a-b143-d275c1e2a6df"
+        }
+    }
+    ```
+
+- **PATCH** `/restaurants/:id/menus/:menuId/items/:itemId/availability`: Update an item's availability by its ID for a specific menu
+
+    - **Requires**:
+        - authentication
+        - `restaurant` role
+        - ownership of the specified restaurant
+
+    - **Example Request Body**
+    ```json
+    {
+        "isAvailable": false
+    }
+    ```
+    - **Example Response** (200: OK):
+    ```json
+    {
+        "data": {
+            "id": "d1eb3a7c-8ec5-4f04-b6a0-275e37691305",
+            "createdAt": "2024-04-21T02:43:28.552Z",
+            "updatedAt": "2024-04-21T03:41:46.918Z",
+            "displayName": "Cheesy Chips",
+            "shortName": "Chips",
+            "description": "A plate of chips, loaded with a mix of mozzarella, cheddar and cheese sauce.",
+            "price": "6.99",
+            "isAvailable": false,
+            "menuId": "3f5945d7-cda8-441a-b143-d275c1e2a6df"
         }
     }
     ```
 
 - **DELETE** `/restaurants/:id/menus/:menuId/items/:itemId`: Delete a specific item by its ID for a specific menu by its ID
+
+    - **Requires**:
+        - authentication
+        - `restaurant` role
+        - ownership of the specified restaurant
 
     - **Example Response** (204: No Content)
