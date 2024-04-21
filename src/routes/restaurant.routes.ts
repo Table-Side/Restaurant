@@ -1,11 +1,12 @@
 import { Router, Request, Response } from "express";
 import prisma from "../config/prisma";
 import { AuthenticatedRequest } from "../interfaces";
-import { hasRole, isAuthenticated, isRestaurantOwner } from "../middleware";
+import { hasRole } from "../middleware";
+import { ownsRestaurant } from "../middleware/is_restaurant_owner";
 
-const router = Router();
+const router = Router({ mergeParams: true });
 
-router.get("/all", async (req: Request, res: Response) => {
+router.get("/", async (req: Request, res: Response) => {
     // Get all restaurants
     try {
         const restaurants = await prisma.restaurant.findMany();
@@ -18,95 +19,7 @@ router.get("/all", async (req: Request, res: Response) => {
     }
 });
 
-router.get("/mine", isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
-    // Get user's restaurants
-    try {
-        const userId = req.user.sub;
-
-        const restaurants = await prisma.restaurant.findMany({
-            where: {
-                restaurantOwners: {
-                    some: {
-                        userId: userId
-                    }
-                }
-            }
-        });
-
-        res.status(200).json({
-            data: restaurants
-        });
-    } catch (error) {
-        res.status(500).json({
-            error: {
-                message: "Failed to get restaurants",
-                details: error
-            }
-        });
-    }
-});
-
-router.post('/create', isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
-    // Create a new restaurant
-    try {
-        const userId = req.user!.sub;
-        const { name, description, numberOfTables } = req.body;
-
-        const restaurant = await prisma.restaurant.create({
-            data: {
-                name,
-                description,
-                restaurantOwners: {
-                    create: {
-                        userId
-                    }
-                }
-            }
-        });
-
-        // Create tables for the restaurant
-        for (let i = 1; i <= numberOfTables; i++) {
-            await prisma.restaurantTable.create({
-                data: {
-                    Restaurant: {
-                        connect: {
-                            id: restaurant.id
-                        }
-                    },
-                    number: i
-                }
-            });
-        }
-
-        // TODO: Update user role to restaurant owner (fix URL)
-        // await fetch(`${process.env.KEYCLOAK_URL}/admin/realms/${process.env.KEYCLOAK_REALM}/users/${userId}/role-mappings/realm`, {
-        //     method: "POST",
-        //     headers: {
-        //         "Content-Type": "application/json",
-        //     },
-        //     body: JSON.stringify([
-        //         {
-        //             name: "restaurant"
-        //         }
-        //     ])
-        // }).then(res => res.json()).then(
-            
-        // );
-
-        res.status(200).json({
-            data: restaurant
-        });
-    } catch (error) {
-        res.status(500).json({
-            error: {
-                message: "Failed to create restaurant",
-                details: error
-            }
-        });
-    }
-});
-
-router.get('/:restaurantId/details', async (req: Request, res: Response) => {
+router.get('/:restaurantId', async (req: Request, res: Response) => {
     // Get restaurant by ID
     try {
         const { restaurantId } = req.params;
@@ -136,11 +49,57 @@ router.get('/:restaurantId/details', async (req: Request, res: Response) => {
     }
 });
 
-router.put('/:restaurantId/update', isAuthenticated, hasRole("restaurant"), isRestaurantOwner, async (req: AuthenticatedRequest, res: Response) => {
+router.put('/', ...hasRole('restaurant'), async (req: AuthenticatedRequest, res: Response) => {
+    // Create a new restaurant
+    try {
+        const userId = req.user!.sub;
+        const { name, description } = req.body;
+
+        const restaurant = await prisma.restaurant.create({
+            data: {
+                name,
+                description,
+                restaurantOwners: {
+                    create: {
+                        userId
+                    }
+                }
+            }
+        });
+
+        // TODO: Update user role to restaurant owner (fix URL)
+        // await fetch(`${process.env.KEYCLOAK_URL}/admin/realms/${process.env.KEYCLOAK_REALM}/users/${userId}/role-mappings/realm`, {
+        //     method: "POST",
+        //     headers: {
+        //         "Content-Type": "application/json",
+        //     },
+        //     body: JSON.stringify([
+        //         {
+        //             name: "restaurant"
+        //         }
+        //     ])
+        // }).then(res => res.json()).then(
+            
+        // );
+
+        res.status(200).json({
+            data: restaurant
+        });
+    } catch (error) {
+        res.status(500).json({
+            error: {
+                message: "Failed to create restaurant",
+                details: error
+            }
+        });
+    }
+});
+
+router.patch('/:restaurantId', ...ownsRestaurant, async (req: AuthenticatedRequest, res: Response) => {
     // Update restaurant
     try {
-        const { name, description } = req.body;
         const { restaurantId } = req.params;
+        const { name, description } = req.body;
 
         const updatedRestaurant = await prisma.restaurant.update({
             where: {
@@ -165,217 +124,14 @@ router.put('/:restaurantId/update', isAuthenticated, hasRole("restaurant"), isRe
     }
 });
 
-router.get('/:restaurantId/menu/all', async (req: Request, res: Response) => {
-    // Get all restaurant's menu
+router.delete('/:restaurantId', ...ownsRestaurant, async (req: AuthenticatedRequest, res: Response) => {
+    // Update restaurant
     try {
         const { restaurantId } = req.params;
-        const menu = await prisma.menu.findMany({
+
+        await prisma.restaurant.delete({
             where: {
-                restaurantId
-            }
-        });
-
-        res.status(200).json({
-            data: menu
-        });
-    } catch (error) {
-        res.status(500).json({
-            error: {
-                message: `Failed to get menu`,
-                details: error
-            }
-        });
-    }
-});
-
-router.post('/:restaurantId/menu/new', isAuthenticated, hasRole("restaurant"), isRestaurantOwner, async (req: AuthenticatedRequest, res: Response) => {
-    // Create new menu
-    try {
-        const { restaurantId } = req.params;
-        const { name } = req.body;
-
-        const menu = await prisma.menu.create({
-            data: {
-                name,
-                restaurantId,
-            }
-        });
-
-        res.status(200).json({
-            data: menu
-        });
-    } catch (error) {
-        res.status(500).json({
-            error: {
-                message: "Failed to create menu",
-                details: error
-            }
-        });
-    }
-})
-
-router.put('/:restaurantId/menu/:menuId/update', isAuthenticated, hasRole("restaurant"), isRestaurantOwner, async (req: AuthenticatedRequest, res: Response) => {
-    // Create new menu
-    try {
-        const { menuId } = req.params
-        const { name } = req.body;
-
-        const updatedMenu = await prisma.menu.update({
-            where: {
-                id: menuId
-            },
-            data: {
-                name
-            }
-        });
-        res.status(200).json({
-            data: updatedMenu
-        });
-    } catch (error) {
-        res.status(500).json({
-            error: {
-                message: "Failed to create menu",
-                details: error
-            }
-        });
-    }
-})
-
-router.get('/:restaurantId/menu/:menuId/details', async (req: Request, res: Response) => {
-    // Get restaurant's menu
-    try {
-        const { restaurantId, menuId } = req.params;
-        const menu = await prisma.menu.findFirstOrThrow({
-            where: {
-                id: menuId,
-                restaurantId,
-            }
-        });
-
-        res.status(200).json({
-            data: menu
-        });
-    } catch (error) {
-        res.status(500).json({
-            error: {
-                message: `Failed to get menu`,
-                details: error
-            }
-        });
-    }
-});
-
-router.post('/:restaurantId/items/create', isAuthenticated, hasRole("restaurant"), isRestaurantOwner, async (req: AuthenticatedRequest, res: Response) => {
-    // Add item to restaurant's menu
-    try {
-        const { menuId, displayName, shortName, description, price } = req.body;
-
-        const item = await prisma.item.create({
-            data: {
-                displayName,
-                shortName,
-                description,
-                price,
-                menuId,
-            }
-        });
-
-        if (!item) {
-            res.status(500).json({
-                error: {
-                    message: "Fail ed to add item to menu"
-                }
-            });
-        }
-
-        const menu = await prisma.menu.findUnique({
-            where: {
-                id: menuId
-            },
-            include: {
-                items: true
-            }
-        });
-
-        res.status(200).json({
-            data: menu
-        });
-    } catch (error) {
-        res.status(500).json({
-            error: {
-                message: "Failed to add item to menu",
-                details: error
-            }
-        });
-    }
-});
-
-router.put('/:restaurantId/items/:itemId/update', isAuthenticated, hasRole("restaurant"), isRestaurantOwner, async (req: AuthenticatedRequest, res: Response) => {
-    // Update menu item
-    try {
-        const { itemId } = req.params;
-        const { displayName, shortName, description, price } = req.body;
-
-        const item = await prisma.item.update({
-            where: {
-                id: itemId
-            },
-            data: {
-                displayName,
-                shortName,
-                description,
-                price
-            }
-        });
-
-        res.status(200).json({
-            data: item
-        });
-    } catch (error) {
-        res.status(500).json({
-            error: {
-                message: "Failed to update item",
-                details: error
-            }
-        });
-    }
-});
-
-router.put('/:restaurantId/items/:itemId/update/availability/:availabilityState', isAuthenticated, hasRole("restaurant"), isRestaurantOwner, async (req: AuthenticatedRequest, res: Response) => {
-    // Update menu item availability
-    try {
-        const { itemId, availabilityState } = req.params;
-
-        const item = await prisma.item.update({
-            where: {                
-                id: itemId
-            },
-            data: {
-                isAvailable: availabilityState === "true"
-            }
-        });
-
-        res.status(200).json({
-            data: item
-        });
-    } catch (error) {
-        res.status(500).json({
-            error: {
-                message: "Failed to update item availability",
-                details: error
-            }
-        });
-    }
-});
-
-router.delete('/:restaurantId/items/:itemId/remove', isAuthenticated, hasRole("restaurant"), isRestaurantOwner, async (req: AuthenticatedRequest, res: Response) => {
-    // Delete menu item
-    try {
-        const { itemId } = req.params;
-
-        await prisma.item.delete({
-            where: {
-                id: itemId
+                id: restaurantId
             }
         });
 
@@ -383,7 +139,7 @@ router.delete('/:restaurantId/items/:itemId/remove', isAuthenticated, hasRole("r
     } catch (error) {
         res.status(500).json({
             error: {
-                message: "Failed to delete item",
+                message: "Failed to update restaurant",
                 details: error
             }
         });

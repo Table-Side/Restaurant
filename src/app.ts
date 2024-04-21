@@ -36,8 +36,13 @@ class App {
     }
 
     routes() {
-        // Order routes
+        // Restaurant routes
         this.server.use("/restaurants", routers.restaurant);
+        this.server.use("/restaurants/:restaurantId/menus/", routers.menu);
+        this.server.use("/restaurants/:restaurantId/menus/:menuId/items", routers.item);
+        this.server.use("/", routers.user);
+
+        // Internal routes
         this.server.use("/internal", routers.internal);
 
         // 404

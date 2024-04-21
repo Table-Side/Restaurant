@@ -9,7 +9,7 @@
       "outDir": "dist",
       "declaration": true,
       "declarationMap": true,
-      "baseUrl": ".",
+      "baseUrl": "./src",
       "paths": {
         "*": ["node_modules/*"]
       },

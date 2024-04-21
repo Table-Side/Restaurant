@@ -16,7 +16,6 @@ model Restaurant {
   description String
 
   menus            Menu[]
-  tables           RestaurantTable[]
   restaurantOwners RestaurantOwner[]
 }
 
@@ -27,17 +26,6 @@ model RestaurantOwner {
 
   userId       String
   
-  Restaurant   Restaurant? @relation(fields: [restaurantId], references: [id])
-  restaurantId String?
-}
-
-model RestaurantTable {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  number Int
-
   Restaurant   Restaurant? @relation(fields: [restaurantId], references: [id])
   restaurantId String?
 }
