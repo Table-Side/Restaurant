@@ -20,6 +20,8 @@ The microservice responsible for restaurant details.
 - `name` (**`String`**): human-readable name of the Restaurant (e.g., _"MacAdoo's"_), set by its owner.
 - `description` (**`String`**): human-readable description of the Restaurant, set by its owner.
 
+- (Optional) `menus` (**`Array`**): an array of [**Menu**](#menu)s that belong to the Restaurant. (Only included in responses that include the Restaurant's menus - e.g., when getting a specific Restaurant.)
+
 ### Menu
 
 - `id` (**`String`**): UUID of the Menu. (Used to refer to the Menu in URLs, etc.,)
@@ -29,6 +31,8 @@ The microservice responsible for restaurant details.
 - `name` (**`String`**): human-readable name of the Menu (e.g., _"Lunch"_), set by its owner.
 
 - `restaurantId` (**`String`**): UUID of the [**Restaurant**](#restaurant) that the Menu belongs to.
+
+- (Optional) `items` (**`Array`**): an array of [**Item**](#item)s that belong to the Menu. (Only included in responses that include the Menu's items - e.g., when getting a specific Menu.)
 
 ### Item
 
@@ -78,7 +82,8 @@ Manage an entire [**Restaurant**](#restaurant).
             "createdAt": "2024-04-21T02:22:08.960Z",
             "updatedAt": "2024-04-21T02:23:41.551Z",
             "name": "Wates House",
-            "description": "Wates House student bar and restaurant offers a great menu, a coffee and milkshake counter and a full bar with a fabulous range of cocktails including a great non-alcoholic selection, draught beer, cider and a range of bottled beers."
+            "description": "Wates House student bar and restaurant offers a great menu, a coffee and milkshake counter and a full bar with a fabulous range of cocktails including a great non-alcoholic selection, draught beer, cider and a range of bottled beers.",
+            "menus": []
         }
     }
     ```
