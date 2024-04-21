@@ -26,6 +26,9 @@ router.get('/:restaurantId', async (req: Request, res: Response) => {
         const restaurant = await prisma.restaurant.findUnique({
             where: {
                 id: restaurantId
+            },
+            include: {
+                menus: true
             }
         });
         if (restaurant) {
