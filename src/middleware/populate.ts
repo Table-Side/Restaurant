@@ -109,8 +109,6 @@ export const populateFromMenu = async (req: AuthenticatedRequest, res: Response,
         });
     }
 
-    console.log(menu);
-
     if (!menu.restaurant) {
         return res.status(404).json({
             error: {

@@ -1,14 +1,15 @@
 import { Router, Request, Response } from "express";
 import prisma from "../config/prisma";
 import { AuthenticatedRequest } from "../interfaces";
-import { ownsRestaurant, populateFromMenu } from "../middleware";
+import { ownsRestaurant, populateFromMenu, restaurantExists } from "../middleware";
 
 const router = Router({ mergeParams: true });
 
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', restaurantExists, async (req: Request, res: Response) => {
     // Get all menus for a given restaurant.
     try {
         const { restaurantId } = req.params;
+
         const menu = await prisma.menu.findMany({
             where: {
                 restaurantId

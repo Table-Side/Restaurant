@@ -2,6 +2,7 @@ import { Response, RequestHandler, NextFunction } from 'express';
 import { AuthenticatedRequest } from '../interfaces';
 import prisma from "../config/prisma";
 import hasRole from './has_role';
+import { restaurantExists } from './exists';
 
 /**
  * Checks if the current user owns the restaurant.
@@ -9,6 +10,7 @@ import hasRole from './has_role';
  * First, checks that the user is authenticated, and then whether the user has a role.
  */
 export const ownsRestaurant: RequestHandler[] = [
+    restaurantExists,
     ...hasRole("restaurant"),
     async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
         const restaurantId = req.params.restaurantId;
@@ -22,15 +24,7 @@ export const ownsRestaurant: RequestHandler[] = [
                 include: {
                     restaurantOwners: true
                 }
-            });
-        
-            if (!restaurant) {
-                return res.status(404).json({
-                    error: {
-                        message: "Restaurant not found"
-                    }
-                });
-            }
+            })!;
         
             const isOwner = restaurant.restaurantOwners.some(owner => owner.userId === userId);
             if (!isOwner) {
