@@ -5,7 +5,7 @@ import * as middleware from "./middleware";
 import * as routers from "./routes";
 
 class App {
-    public server;
+    private server;
 
     constructor() {
         this.server = express();
@@ -58,6 +58,10 @@ class App {
             });
         });
     }
+
+    listen(port: number | string, callback: () => void) {
+        this.server.listen(port, callback);
+    }
 }
 
-export default new App().server;
+export default new App();
