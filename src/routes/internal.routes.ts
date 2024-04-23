@@ -42,15 +42,26 @@ router.get("/items", async (req: Request, res: Response) => {
 
     const items = await prisma.item.findMany({
         where: {
-            id: itemIds,
+            id: {
+                in: itemIds
+            },
             menu: {
                 restaurantId: restaurantId.toString()
             }
         }
     });
 
-    return res.status(items ? 200 : 404).json({
-        data: items ? items : []
+    if (!items) {
+        return res.status(404).json({
+            error: {
+                message: "Items not found",
+                details: "No items found with the provided IDs"
+            }
+        });
+    }
+
+    return res.status(200).json({
+        data: items
     });
 })
 
