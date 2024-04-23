@@ -1,7 +1,7 @@
 {
   "name": "@tableside/restaurant",
   "version": "0.1.0",
-  "description": "A microservice component for manging restaurants.",
+  "description": "The microservice responsible for restaurant details.",
   "main": "dist/server.js",
   "repository": {
     "type": "git",

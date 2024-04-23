@@ -15,38 +15,39 @@ The microservice responsible for restaurant details.
 
 - `id` (**`String`**): UUID of the Restaurant. (Used to refer to the Restaurant in URLs, etc.,)
 - `createdAt` (**`DateTime`**): Date and time of when the Restaurant was created.
-- `updatedAt` (**`DateTime`**): Date and tiem of when the Restaurant was last updated.
-
+- `updatedAt` (**`DateTime`**): Date and time of when the Restaurant was last updated.
 - `name` (**`String`**): human-readable name of the Restaurant (e.g., _"MacAdoo's"_), set by its owner.
 - `description` (**`String`**): human-readable description of the Restaurant, set by its owner.
-
 - (Optional) `menus` (**`Array`**): an array of [**Menu**](#menu)s that belong to the Restaurant. (Only included in responses that include the Restaurant's menus - e.g., when getting a specific Restaurant.)
+
+### RestaurantOwner
+
+- `id` (**`String`**): UUID of the Restaurant's Owner.
+- `createdAt` (**`DateTime`**): Date and time of when the Menu was created.
+- `updatedAt` (**`DateTime`**): Date and tiem of when the Menu was last updated.
+- `userId` (**`String`**): UUID of the User's Keycloak ID.
+- `restaurantId` (**`String`**): UUID of the [**Restaurant**](#Restaurant).
 
 ### Menu
 
-- `id` (**`String`**): UUID of the Menu. (Used to refer to the Menu in URLs, etc.,)
+- `id` (**`String`**): UUID of the Menu.
 - `createdAt` (**`DateTime`**): Date and time of when the Menu was created.
 - `updatedAt` (**`DateTime`**): Date and tiem of when the Menu was last updated.
-
-- `name` (**`String`**): human-readable name of the Menu (e.g., _"Lunch"_), set by its owner.
-
+- `name` (**`String`**): Human-readable name of the Menu (e.g., _"Lunch"_), set by its owner.
 - `restaurantId` (**`String`**): UUID of the [**Restaurant**](#restaurant) that the Menu belongs to.
-
-- (Optional) `items` (**`Array`**): an array of [**Item**](#item)s that belong to the Menu. (Only included in responses that include the Menu's items - e.g., when getting a specific Menu.)
+- (Optional) `items` (**`Array`**): An array of [**Item**](#item)s that belong to the Menu. (Only included in responses that include the Menu's items - e.g., when getting a specific Menu.)
 
 ### Item
 
 - `id` (**`String`**): UUID of the Item. (Used to refer to the Item in URLs, etc.,)
 - `createdAt` (**`DateTime`**): Date and time of when the Item was created.
 - `updatedAt` (**`DateTime`**): Date and tiem of when the Item was last updated.
-
-- `displayName` (**`String`**): human-readable full name of the Item (e.g., _"Chargrilled Shrimp and Cheese Grits"_), set by its owner.
-- `shortName` (**`String`**): human-readable short name of the Item (e.g., _"Shrimp and Grits"_), set by its owner.
-- `description` (**`String`**): human-readable description of the Item (e.g., _"The most delicious thing you will ever eat!"_), set by its owner.
-- `price` (**`Decimal`**): the decimal price of the Item (e.g., `6.99`).
-- `isAvailable` (**`Boolean`**): whether the Item is currently in stock.
-
-- `menuId` (**`String`**): UUID of the [**Menu**](#menu) that the Menu belongs to.
+- `displayName` (**`String`**): Human-readable full name of the Item (e.g., _"Chargrilled Shrimp and Cheese Grits"_), set by its owner.
+- `shortName` (**`String`**): Human-readable short name of the Item (e.g., _"Shrimp and Grits"_), set by its owner.
+- `description` (**`String`**): Human-readable description of the Item (e.g., _"The most delicious thing you will ever eat!"_), set by its owner.
+- `price` (**`Decimal`**): The price of the Item (e.g., `6.99`).
+- `isAvailable` (**`Boolean`**): Whether the Item is currently in stock.
+- `menuId` (**`String`**): UUID of the [**Menu**](#menu) that the item belongs to.
 
 ## API Routes
 
