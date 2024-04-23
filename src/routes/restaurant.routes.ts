@@ -6,7 +6,7 @@ import { ownsRestaurant } from "../middleware/is_restaurant_owner";
 
 const router = Router({ mergeParams: true });
 
-router.get("/", async (req: Request, res: Response) => {
+router.get("/all", async (req: Request, res: Response) => {
     // Get all restaurants
     try {
         const restaurants = await prisma.restaurant.findMany();
@@ -15,7 +15,12 @@ router.get("/", async (req: Request, res: Response) => {
             data: restaurants
         });
     } catch (error) {
-        res.status(500).json({ error: "Failed to get restaurants" });
+        res.status(500).json({
+            error: {
+                message: "Failed to get restaurants",
+                details: error
+            }
+        });
     }
 });
 
