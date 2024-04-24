@@ -26,7 +26,43 @@ router.get("/restaurant/exists", async (req: Request, res: Response) => {
             exists: restaurant ? true : false
         }
     });
-})
+});
+
+router.get("/restaurant/:restaurantId/isOwner", async (req: Request, res: Response) => {
+    const { restaurantId } = req.params;
+    const userId = req.query.userId;
+
+    if (!userId) {
+        return res.status(400).json({
+            error: {
+                message: "Invalid request",
+                details: "No user ID provided"
+            }
+        });
+    }
+
+    const restaurant = await prisma.restaurant.findUnique({
+        where: {
+            id: restaurantId
+        },
+        include: {
+            restaurantOwners: true
+        }
+    });
+
+    if (!restaurant) {
+        return res.status(404).json({
+            error: {
+                message: "Restaurant not found",
+                details: "No restaurant found with the provided ID"
+            }
+        });
+    }
+
+    const isOwner = restaurant.restaurantOwners.some(owner => owner.userId === userId.toString());
+
+    return res.status(isOwner ? 200 : 403).json({ data: { isOwner: isOwner } });
+});
 
 router.post("/items", async (req: Request, res: Response) => {
     const { restaurantId, itemIds } = req.body;
