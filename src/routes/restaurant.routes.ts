@@ -9,7 +9,11 @@ const router = Router({ mergeParams: true });
 router.get("/", async (req: Request, res: Response) => {
     // Get all restaurants
     try {
-        const restaurants = await prisma.restaurant.findMany();
+        const restaurants = await prisma.restaurant.findMany({
+            include: {
+                menus: true
+            }
+        });
 
         res.status(200).json({
             data: restaurants
