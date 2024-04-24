@@ -28,7 +28,7 @@ router.get("/restaurant/exists", async (req: Request, res: Response) => {
     });
 })
 
-router.get("/items", async (req: Request, res: Response) => {
+router.post("/items", async (req: Request, res: Response) => {
     const { restaurantId, itemIds } = req.body;
 
     if (!itemIds) {
