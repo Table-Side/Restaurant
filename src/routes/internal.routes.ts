@@ -61,7 +61,7 @@ router.get("/restaurant/:restaurantId/isOwner", async (req: Request, res: Respon
 
     const isOwner = restaurant.restaurantOwners.some(owner => owner.userId === userId.toString());
 
-    return res.status(isOwner ? 200 : 403).json({ data: { isOwner: isOwner } });
+    return res.status(isOwner ? 200 : 403).json({ data: { isOwner: isOwner, restaurantOwnerIds: restaurant.restaurantOwners.map(x => x.userId) } });
 });
 
 router.post("/items", async (req: Request, res: Response) => {
